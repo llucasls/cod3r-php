@@ -1,0 +1,102 @@
+<video id="meuVideo" width="800" height="450" controlsList="nodownload">
+    <source src="http://files.cod3r.com.br/curso-web/video.mp4" type="video/mp4">
+    Seu browser não suporta a tag de vídeo.
+</video>
+
+<div wm-progresso="meuVideo" class="progresso">
+    <div></div>
+</div>
+
+<div>
+    <button wm-play="meuVideo">Play</button>
+    <button wm-pause="meuVideo">Pause</button>
+</div>
+
+<style>
+    .progresso {
+        height: 20px;
+        width: 500px;
+        border: solid 1px #444;
+        margin: 20px;
+    }
+
+    .progresso > div {
+        background-color: red;
+        color: #fff;
+        height: 100%;
+        text-align: right;
+        font-size: 14px;
+        width: 0%;
+        cursor: default;
+    }
+</style>
+
+<script>
+    let videoAtivo = null;
+
+    function ativarVideo(elem) {
+        videoAtivo = elem;
+    }
+
+    function configurarVideo(id) {
+        const video = document.getElementById(id);
+        video.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+        video.addEventListener('click', () => {
+            ativarVideo(video);
+        });
+
+        const botaoPlay = document.querySelector(`[wm-play=${id}]`);
+        botaoPlay.addEventListener('click', () => {
+            video.play();
+            ativarVideo(video);
+        })
+
+        const botaoPause = document.querySelector(`[wm-pause=${id}]`);
+        botaoPause.addEventListener('click', () => {
+            video.pause();
+            ativarVideo(video);
+        })
+
+        const valorDiv = document.querySelector(`[wm-progresso=${id}] > div`);
+        video.addEventListener('timeupdate', () => {
+            const percentual = video.currentTime * 100 / video.duration;
+            valorDiv.style.width = `${percentual}%`;
+            valorDiv.innerHTML = `${percentual.toFixed(1)}%`;
+        })
+
+        const barra = document.querySelector(`[wm-progresso=${id}]`);
+        barra.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const { left, width } = barra.getBoundingClientRect();
+            video.currentTime = (event.x - left) * video.duration / width;
+            ativarVideo(video);
+        })
+    }
+
+    document.addEventListener('keydown', ({ keyCode }) => {
+        if (!videoAtivo)
+            return;
+        const video = videoAtivo;
+        const tempo = video.currentTime;
+        const total = video.duration;
+        const passo = total / 22;
+        switch (keyCode) {
+            case 37:
+                video.currentTime = tempo < passo ? 0 : tempo - passo;
+                break;
+            case 39:
+                video.currentTime = tempo > total - passo ? total : tempo + passo;
+                break;
+            case 32:
+                if (video.paused)
+                    video.play();
+                else
+                    video.pause();
+                break;
+        }
+    })
+
+    configurarVideo('meuVideo');
+</script>
